@@ -1,0 +1,138 @@
+#include <iostream>
+using namespace std;
+
+class Fraction {
+    int num;
+    int den;
+
+public:
+    Fraction(int num, int den = 1) {
+        this->num = num;
+        this->den = den;
+        this->simplify();
+    }
+
+    Fraction(const Fraction &orig) {
+        this->num = orig.num;
+        this->den = orig.den;
+        this->simplify();
+    }
+
+    Fraction() {
+        this->num = 0;
+        this->den = 1;
+    }
+
+    Fraction& operator=(const Fraction &orig) {
+        if (this != &orig) {
+            this->num = orig.num;
+            this->den = orig.den;
+        }
+        return *this;
+    }
+
+    int getNum() const { return this->num; }
+    int getDen() const { return this->den; }
+
+    void setNum(int x) { this->num = x; }
+    void setDen(int x) { this->den = x; }
+
+    void print() const {
+        cout << this->num << "/" << this->den << "\n";
+    }
+
+    int gcd(int a, int b) const {
+        if (b == 0) return a;
+        return gcd(b, a % b);
+    }
+
+    void simplify() {
+        int g = gcd(abs(this->num), abs(this->den));
+        if (g > 1) {
+            this->num /= g;
+            this->den /= g;
+        }
+    }
+
+    Fraction operator*(const Fraction &other) const {
+        Fraction result(*this);
+        result.setNum(this->num * other.getNum());
+        result.setDen(this->den * other.getDen());
+        result.simplify();
+        return result;
+    }
+
+    Fraction operator+(const Fraction &other) const {
+        Fraction result(*this);
+        if (this->den == other.den) {
+            result.setNum(this->num + other.num);
+            return result;
+        }
+        result.setNum(this->num * other.getDen() + other.getNum() * this->den);
+        result.setDen(this->den * other.getDen());
+        result.simplify();
+        return result;
+    }
+
+    Fraction operator-(const Fraction &other) const {
+        Fraction result(*this);
+        if (this->den == other.den) {
+            result.setNum(this->num - other.num);
+            return result;
+        }
+        result.setNum(this->num * other.getDen() - other.getNum() * this->den);
+        result.setDen(this->den * other.getDen());
+        result.simplify();
+        return result;
+    }
+
+    Fraction operator/(const Fraction &other) const {
+        if (other.num == 0) {
+            cout << "invalid division";
+            return {};
+        }
+
+        Fraction inv(other);
+        inv.setNum(other.den);
+        inv.setDen(other.num);
+
+        Fraction result = this->operator*(inv);
+        result.simplify();
+        return result;
+    }
+
+    bool operator==(const Fraction &other) const {
+        return (this->num == other.num && this->den == other.den);
+    }
+
+    bool operator<(const Fraction &other) const {
+        if (this->den == other.den)
+            return this->num < other.num;
+        return this->num * other.getDen() < other.num * this->den;
+    }
+
+    bool operator>(const Fraction &other) const {
+        return !(*this < other) && !(*this == other);
+    }
+
+    ~Fraction() {}
+};
+
+ostream& operator<<(ostream &o, const Fraction &f) {
+    o << f.getNum() << "/" << f.getDen();
+    return o;
+}
+
+int main() {
+    Fraction x(7,8), y(4,5);
+
+    cout << "*: " << x*y
+         << "\n/: " << x/y
+         << "\n+: " << x+y
+         << "\n-: " << x-y
+         << "\n==: " << (x==y)
+         << "\n<: " << (x<y)
+         << "\n>: " << (x>y) << '\n';
+
+    return 0;
+}
