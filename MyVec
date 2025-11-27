@@ -1,0 +1,232 @@
+#include <iostream>
+
+class MyVec {
+private:
+    int size;
+    int capacity;
+    int* elements;
+
+    void _copy(const MyVec& orig);
+
+public:
+    MyVec(int size = 0, int value = 0);
+    ~MyVec();
+    MyVec(const MyVec& orig);
+    MyVec& operator=(const MyVec& orig);
+
+    void print() const;
+    void push(int val);
+    void pop();
+    void pop_back();
+
+    void sort();
+
+    MyVec operator+(const MyVec& other) const;
+
+    int* data();
+    const int* data() const;
+
+    int& back();
+    const int& back() const;
+
+    int& front();
+    const int& front() const;
+
+    int& at(int index);
+    const int& at(int index) const;
+
+    int operator[](int i) const;  //returns 42 if out of range
+};
+
+
+
+void MyVec::_copy(const MyVec& orig) {
+    this->capacity = orig.capacity;
+    this->size = orig.size;
+    this->elements = new int[this->capacity];
+    for (int i = 0; i < this->size; ++i) {
+        this->elements[i] = orig.elements[i];
+    }
+}
+
+MyVec::MyVec(int size_, int value) {
+    int cap = 4;
+    while (size_ >= cap) cap *= 2;
+
+    this->capacity = cap;
+    this->size = size_;
+    this->elements = new int[this->capacity];
+
+    for (int i = 0; i < this->size; ++i) {
+        this->elements[i] = value;
+    }
+}
+
+MyVec::~MyVec() {
+    delete[] elements;
+}
+
+MyVec::MyVec(const MyVec& orig) {
+    _copy(orig);
+}
+
+MyVec& MyVec::operator=(const MyVec& orig) {
+    if (this != &orig) {
+        delete[] this->elements;
+        _copy(orig);
+    }
+    return *this;
+}
+
+void MyVec::print() const {
+    std::cout << "C: " << this->capacity << " S: " << this->size << ":\n";
+    for (int i = 0; i < this->size; ++i) {
+        std::cout << this->elements[i] << " ";
+    }
+    std::cout << std::endl;
+}
+
+void MyVec::push(int val) {
+    if (this->size == this->capacity) {
+        int newcap = this->capacity * 2;
+        int* tmp = new int[newcap];
+        for (int i = 0; i < this->size; ++i) tmp[i] = this->elements[i];
+        delete[] elements;
+        elements = tmp;
+        this->capacity = newcap;
+    }
+
+    this->elements[this->size] = val;
+    this->size++;
+}
+
+void MyVec::pop() {
+    if (this->size > 0) this->size--;
+}
+
+void MyVec::pop_back() {
+    if (size == 0) return;
+
+    size--;
+
+    if (size * 2 <= capacity && capacity > 4) {
+        capacity /= 2;
+
+        int* newArr = new int[capacity];
+
+        for (int i = 0; i < size; i++)
+            newArr[i] = elements[i];
+
+        delete[] elements;
+        elements = newArr;
+    }
+}
+
+void MyVec::sort() {
+    for (int i = 0; i < size - 1; i++) {
+        for (int j = i + 1; j < size; j++) {
+            if (elements[i] > elements[j]) {
+                int tmp = elements[i];
+                elements[i] = elements[j];
+                elements[j] = tmp;
+            }
+        }
+    }
+}
+
+MyVec MyVec::operator+(const MyVec& other) const {
+    MyVec result;
+
+    result.size = size + other.size;
+    result.capacity = 4;
+    while (result.capacity < result.size) result.capacity *= 2;
+    result.elements = new int[result.capacity];
+
+    for (int i = 0; i < size; i++)
+        result.elements[i] = elements[i];
+
+    for (int i = 0; i < other.size; i++)
+        result.elements[size + i] = other.elements[i];
+
+    return result;
+}
+
+int* MyVec::data() {
+    return elements;
+}
+
+const int* MyVec::data() const {
+    return elements;
+}
+
+int& MyVec::back() {
+    return elements[size - 1];
+}
+
+const int& MyVec::back() const {
+    return elements[size - 1];
+}
+
+int& MyVec::front() {
+    return elements[0];
+}
+
+const int& MyVec::front() const {
+    return elements[0];
+}
+
+int& MyVec::at(int index) {
+    if (index < 0) index = 0;
+    if (index >= size) index = size - 1;
+    return elements[index];
+}
+
+const int& MyVec::at(int index) const {
+    if (index < 0) index = 0;
+    if (index >= size) index = size - 1;
+    return elements[index];
+}
+
+int MyVec::operator[](int i) const {
+    if (i < 0 || i >= size) {
+        return 42;
+    }
+    return elements[i];
+}
+
+int main() {
+    MyVec v(3, 123);
+    v.print();
+
+    v.push(999);
+    v.push(777);
+    v.pop();
+    v.push(777);
+    v.push(333);
+    v.push(122);
+    v.push(10112554);
+
+    v.print();
+
+    std::cout << "Element at index 6 (using operator[]): " << v[6] << std::endl;
+
+    v.pop_back();
+    v.pop_back();
+    v.pop_back();
+    v.print();
+
+    v.sort();
+    std::cout << "After sorting:" << std::endl;
+    v.print();
+
+    MyVec v2(2, 50);
+    MyVec v3 = v + v2;
+    std::cout << "After concatenation:" << std::endl;
+    v3.print();
+
+    std::cout << "Front element: " << v3.front() << std::endl;
+    std::cout << "Back element: " << v3.back() << std::endl;
+    std::cout << "Element at index 2: " << v3.at(2) << std::endl;
+
+    return 0;
+}
