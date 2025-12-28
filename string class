@@ -1,0 +1,105 @@
+#include <iostream>
+#include <cstring>
+#include <cstdint>
+using namespace std;
+
+class MyString {
+    char* data;
+    uint32_t lengthValue;
+
+    void copyFrom(const MyString& other) {
+        lengthValue = other.lengthValue;
+        data = new char[lengthValue + 1];
+        strcpy(data, other.data);
+    }
+
+public:
+    MyString(const char* text = "") {
+        lengthValue = strlen(text);
+        data = new char[lengthValue + 1];
+        strcpy(data, text);
+    }
+
+    MyString(const MyString& other) {
+        copyFrom(other);
+    }
+
+    MyString& operator=(const MyString& other) {
+        if (this != &other) {
+            delete[] data;
+            copyFrom(other);
+        }
+        return *this;
+    }
+
+    uint32_t length() const {
+        return lengthValue;
+    }
+
+    MyString operator+(const MyString& other) const {
+        uint32_t newLen = lengthValue + other.lengthValue;
+        char* buffer = new char[newLen + 1];
+
+        strcpy(buffer, data);
+        strcat(buffer, other.data);
+
+        MyString result(buffer);
+        delete[] buffer;
+        return result;
+    }
+
+    MyString& operator+=(const MyString& other) {
+        uint32_t newLen = lengthValue + other.lengthValue;
+        char* buffer = new char[newLen + 1];
+
+        strcpy(buffer, data);
+        strcat(buffer, other.data);
+
+        delete[] data;
+        data = buffer;
+        lengthValue = newLen;
+
+        return *this;
+    }
+
+    friend ostream& operator<<(ostream& out, const MyString& str);
+    friend istream& operator>>(istream& in, MyString& str);
+
+    ~MyString() {
+        delete[] data;
+    }
+};
+
+ostream& operator<<(ostream& out, const MyString& str) {
+    out << str.data;
+    return out;
+}
+
+istream& operator>>(istream& in, MyString& str) {
+    char buffer[10000];
+    in.getline(buffer, 10000);
+
+    delete[] str.data;
+    str.lengthValue = strlen(buffer);
+    str.data = new char[str.lengthValue + 1];
+    strcpy(str.data, buffer);
+
+    return in;
+}
+
+int main() {
+    MyString first;
+    MyString second("Hello");
+
+    cout << "Enter a string: ";
+    cin >> first;
+
+    cout << "Strings: " << first << " , " << second << endl;
+    cout << "Length of second: " << second.length() << endl;
+    cout << "operator+: " << first + second << endl;
+
+    second += first;
+    cout << "operator+= result: " << second << endl;
+
+    return 0;
+}
